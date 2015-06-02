@@ -4,8 +4,9 @@ function plotpersistence(data, expnum, framenum),
 %data = load('aphiddata.csv');
 %expnum = 1;
 %framenum = 2;    
-
-indx = (data(:, 1) == expnum);
+    load_javaplex;
+    
+    indx = (data(:, 1) == expnum);
     sim1 = data(indx, [3 4 5]);
 
     indx = (sim1(:, 1) == framenum);
