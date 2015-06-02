@@ -1,7 +1,7 @@
 % fname is path to aphiddata.csv file
 % plots the trajectories of the <expnum> experiment
 % sample usage: plotaphid('aphiddata.csv', 1);
-function plotaphi(fname, expnum)
+function plotaphid(fname, expnum)
 
     aphiddata = load(fname);
 
