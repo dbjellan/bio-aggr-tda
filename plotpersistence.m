@@ -7,7 +7,7 @@ function plotpersistence(data, expnum, framenum),
     load_javaplex;
     
     indx = (data(:, 1) == expnum);
-    sim1 = data(indx, [3 4 5]);
+    sim1 = data(indx, [3 4 5 6 7]);
 
     indx = (sim1(:, 1) == framenum);
     sim1 = sim1(indx, [2 3]);
@@ -18,12 +18,18 @@ function plotpersistence(data, expnum, framenum),
     %load_javaplex;
     
     m_space = metric.impl.EuclideanMetricSpace(sim1);
-    stream = api.Plex4.createVietorisRipsStream(sim1, 2, 4, 500);
+    stream = api.Plex4.createVietorisRipsStream(sim1, 2, .1, 1000);
     persistence = api.Plex4.getModularSimplicialAlgorithm(3, 2);
     intervals = persistence.computeIntervals(stream);
     options.filename = 'ripsFrame1';
     options.max_filtration_value = 0.1;
     options.max_dimension = 2;
+    
+    intervals = persistence.computeIntervals(stream);
+    endpoints = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 0, 0);
+    sort(endpoints)
+    
+    
     plot_barcodes(intervals, options);
 
    

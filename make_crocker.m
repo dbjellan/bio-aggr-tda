@@ -22,7 +22,7 @@ for i = 1:timesamples,
 
     % calculate persistent homology on this frame
     m_space = metric.impl.EuclideanMetricSpace(thisframe);
-    stream = api.Plex4.createVietorisRipsStream(thisframe, 2, 4, 1000);
+    stream = api.Plex4.createVietorisRipsStream(thisframe, 2, .1, 1000);
     persistence = api.Plex4.getModularSimplicialAlgorithm(3, 2);
     intervals = persistence.computeIntervals(stream);
     
@@ -39,5 +39,5 @@ for i = 1:timesamples,
 end
 
 % make our contour plot with provided contours 
-contour(crocker_dat, [1 2 3 4 5]);
+contour(crocker_dat, [1:10]);
     

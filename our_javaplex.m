@@ -24,7 +24,7 @@
 
 curpath = pwd();
 fname = mfilename('fullpath');
-[pathstr,name,ext] = fileparts(fname);
+[pathstr,name,ext] = fileparts(fname)
 cd(pathstr);
 
 javaaddpath(strcat(pathstr, '/lib/javaplex.jar'));
