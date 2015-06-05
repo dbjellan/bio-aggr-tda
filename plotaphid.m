@@ -15,9 +15,10 @@ function plotaphid(aphiddata, expnum)
     while 1,
         % grabs the indexes of points in current frame
         i = (sim1fxy(:, 1)==curframe);
-
+        
         % plots current frame
         scatter(sim1fxy(i, 2), sim1fxy(i, 3));
+        title(strcat('Frame: ', sprintf('%0.1d', num2str(curframe))));
         axis([-.3 .3 -.3 .3]);
 
         % increment frame and pause
