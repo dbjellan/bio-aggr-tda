@@ -1,0 +1,80 @@
+%uncomment load javaplex and data for first run, then recomment to shorten runtime
+%load_javaplex;
+%aphiddata = load('aphiddata.csv');
+expnum = 4;
+framenum = 267;
+stepsize = 0.001;
+epsilon = stepsize;
+maximum = 0.05;
+
+% grabs the [frame number, x coord, y coord] of designated 
+% experiment and frame
+indx = ( aphiddata(:,1) == expnum);
+sim1fxy = aphiddata(indx, [3, 4, 5]);
+indxFrame = (sim1fxy(:,1) == framenum);
+frameOnly = sim1fxy(indxFrame, [1, 2, 3]);
+elementsInFrame = numel(frameOnly(:,1));
+
+%adjacency matrix for all points in the frame, used to keep track of which
+%points are already connected
+adjacent = 0*ones(elementsInFrame, elementsInFrame);
+
+figure
+while epsilon < maximum,
+    
+    % plots current frame
+    scatter(frameOnly(:, 2), frameOnly(:, 3), 'filled');
+    axis([-.3 .3 -.3 .3]);
+    delta = 2*epsilon;
+    
+    title(strcat('Epsilon = ', num2str(delta)))
+
+    %updating adjacency matrix (must be done before attempting to find 2simplices)
+     for x = 1:elementsInFrame
+         for y = x:elementsInFrame
+             if(adjacent(x, y) == 0 && sqrt((frameOnly(x, 2)-frameOnly(y, 2)).^2 + (frameOnly(x, 3)-frameOnly(y, 3)).^2) < 2 * epsilon);
+                 adjacent(x, y) = 1; 
+             end
+         end
+     end
+     
+     %drawing 2simplices
+     for x = 1:elementsInFrame %going through rows
+         for y = x:elementsInFrame %going through relevant columns in that row
+             if(adjacent(x, y) == 1);
+                 %check the row y from y on
+                 for z = y:elementsInFrame %second column loop
+                     if (adjacent(x, z) == 1 && adjacent(y, z) == 1)
+                         xdata = [frameOnly(x, 2); frameOnly(y, 2); frameOnly(z, 2)];
+                         ydata = [frameOnly(x, 3); frameOnly(y, 3); frameOnly(z, 3)];
+                          p = patch(xdata,ydata,[.5 .8 0], 'EdgeColor','r', 'LineWidth', 1);
+                     end
+                 end
+             end
+         end
+     end
+
+     %drawing 1simplices (must be done after all 2 simplices drawn for clarity of image)
+     for x = 1:elementsInFrame
+         for y = x:elementsInFrame
+             if(adjacent(x, y) == 1);
+                 line([frameOnly(x, 2) frameOnly(y, 2)'],[frameOnly(x, 3) frameOnly(y, 3)'],'Marker','.','LineStyle','-', 'LineWidth', 4, 'Color', 'r')
+             end
+         end
+     end
+
+    % draw epsilon circles around each point
+    for j = 1:elementsInFrame
+        pos = [frameOnly(j, 2)-epsilon frameOnly(j, 3)-epsilon 2*epsilon 2*epsilon];
+        rectangle('Position',pos,'Curvature',[1 1])
+        
+        % and add text labels
+        text(frameOnly(j, 2),frameOnly(j, 3),strcat( ' - ', int2str(j)))
+    end
+   
+     
+    % increment epsilon
+    epsilon = epsilon + stepsize;
+    pause();
+
+end
