@@ -17,7 +17,7 @@ function plotaphid(aphiddata, expnum)
         i = (sim1fxy(:, 1)==curframe);
         
         % plots current frame
-        scatter(sim1fxy(i, 2), sim1fxy(i, 3));
+        scatter(sim1fxy(i, 2), sim1fxy(i, 3), 'filled');
         title(strcat('Frame: ', sprintf('%0.1d', num2str(curframe))));
         axis([-.3 .3 -.3 .3]);
 
