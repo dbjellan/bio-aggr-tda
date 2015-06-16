@@ -1,7 +1,7 @@
 clear all;
-load_javaplex
+load_javaplex;
 
-javaaddpath('/Users/dbjellan/Desktop/commons-lang3-3.4/commons-lang3-3.4.jar');
+javaaddpath('./');
 
 points = [0 0; 1 0; 0 1; 1 1; .5 1.5; 3 3];
 
