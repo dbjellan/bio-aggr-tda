@@ -20,11 +20,17 @@ function in = pointsincircle(xydata,radius_squared,hk)
 %                                   radius
 %             points.out ---- cell of x- and y- coordinate data of all points outside the cut-off
 %                                   radius
+length = 2*pi;
+%dist_squared = (hk(1) - xydata(:, 1)).^2   +   (hk(2) - xydata(:, 2)).^2; % distance calc.
+%d1_squared = (mod(length-hk(1) - xydata(:, 1), length)).^2   +   (hk(2) - xydata(:, 2)).^2;
+%d2_squared = (hk(1) - xydata(:, 1)).^2   +   (mod(length - hk(2) - xydata(:, 2), length)).^2;
+%d3_squared = (mod(length-hk(1) - xydata(:, 1), length)).^2   +   (mod(length-hk(2) - xydata(:, 2), length)).^2;
 
-dist_squared = (hk(1) - xydata(:, 1)).^2   +   (hk(2) - xydata(:, 2)).^2; % distance calc.
-
+xdiff = abs(hk(1) - xydata(:, 1));
+ydiff = abs(hk(2) - xydata(:, 2));
+dist_squared = min(xdiff, length-ydiff).^2 + min(ydiff, length-ydiff).^2;
 % Find points inside circle
-in = find(dist_squared<radius_squared);
+in = dist_squared<radius_squared;
 
 % Find points outside circle
 % comment it out if its not needed

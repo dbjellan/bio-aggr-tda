@@ -6,8 +6,8 @@ javaaddpath('./');
 points = [0 0; 1 0; 0 1; 1 1; .5 1.5; 3 3];
 
 timestrapper = VeitorisRipsTimeStrapper(2, 1.1);
-for i = 1:4
-    timestrapper.addComplex(points+ .05*randn(size(points)));
+for i = 1:8
+    timestrapper.addComplex(points + .005*randn(size(points)) + (i*.05));
 end
 
 barcodes = timestrapper.performTimeStrap();
