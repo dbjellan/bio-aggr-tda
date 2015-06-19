@@ -14,13 +14,13 @@ yinit = 10*rand(numparticles, 1);
 vxinit = 2*pi*rand(numparticles, 1);
 vyinit = 2*pi*rand(numparticles, 1);
 
-in = [vxinit, vyinit, xinit, yinit];
+in = [vxinit; vyinit; xinit; yinit];
 in = in';
 
 [t, x] = ode45(@functionOfInterest, tspan, in);
 matrix = [t, x];
 
-y = zeros(4*numparticles);
+y = zeros(1, 4*numparticles);
 
 size([t, x])
 for theta = 1:n
@@ -53,7 +53,9 @@ function dxdt = functionOfInterest(t, x)
     attraction = .5;
     attractionLength = 2;
 
-    Q = zeros(numparticles);
+    Q = zeros(numparticles, 2);
+    
+    %size(Q(6,:))
 
     k = numparticles;
     vx = x(1:k);
@@ -71,19 +73,17 @@ function dxdt = functionOfInterest(t, x)
         %establish Q forces for each i
         for j = 1:numparticles
             if (j ~= i)
-                Q(i) = sum(repulsion * exp(-norm(pos(i,:) - pos(j,:))/repulsionLength) - attraction * exp(- norm(pos(i,:) - pos(j,:))/attractionLength));
+                %Q(i) = Q(i) + repulsion * exp(-norm(pos(i,:) - pos(j,:))/repulsionLength) - attraction * exp(- norm(pos(i,:) - pos(j,:))/attractionLength);
+                %size((repulsion * exp(-norm(pos(i,:) - pos(j,:))/repulsionLength) /repulsionLength - attraction * exp(-norm(pos(i,:) - pos(j,:))/attractionLength) / attractionLength)*((pos(i,:) - pos(j,:))/(norm(pos(i,:) - pos(j,:)))))
+                Q(i,:) = Q(i,:) + (-repulsion * exp(-norm(pos(i,:) - pos(j,:))/repulsionLength) /repulsionLength + attraction * exp(-norm(pos(i,:) - pos(j,:))/attractionLength) / attractionLength)*((pos(i,:) - pos(j,:))/(norm(pos(i,:) - pos(j,:))));
             end
         end
 
-        %dxdt = zeros([i, 2]);
         xdot = [xdot, vx(i), vy(i)];
-        vdotxy = ([xdot(2*i - 1), xdot(2*i)]/m)*(selfPropulsion - friction*norm([xdot(2*i - 1), xdot(2*i)])^2) - gradient(Q(i))/m;
+        vdotxy = ([xdot(2*i - 1), xdot(2*i)]/m)*(selfPropulsion - friction*norm([xdot(2*i - 1), xdot(2*i)])^2) - Q(i)/m;
         vdot = [vdot, vdotxy(1), vdotxy(2)];
-%             dxdt[i, 2] = vdot(i);
-    end
 
-    %out = [newxpos, newypos, newvx, newvy];
-    %dxdt = out';
+    end
     dxdt = [xdot, vdot]';
 end
 end
