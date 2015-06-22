@@ -1,4 +1,4 @@
-function vicsek_persistence(frame, fname, numpoints)
+function intervals = vicsek_persistence(frame, numpoints, makeplot, fname)
     load_javaplex;
     
     distances = vicsek_distance(frame);
@@ -15,6 +15,13 @@ function vicsek_persistence(frame, fname, numpoints)
 
     intervals = persistence.computeIntervals(stream);
     endpoints = edu.stanford.math.plex4.homology.barcodes.BarcodeUtility.getEndpoints(intervals, 0, 0);
-    sort(endpoints);
-    plot_barcodes(intervals, options);
+
+    if makeplot
+        sort(endpoints);    
+        options.filename = char(fname);
+        options.max_filtration_value = 1;
+        options.max_dimension = 2;    
+        plot_barcodes(intervals, options);
+    end
+    
 end
