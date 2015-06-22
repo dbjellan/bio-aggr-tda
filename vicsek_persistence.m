@@ -3,8 +3,8 @@ function intervals = vicsek_persistence(frame, numpoints, makeplot, fname)
     
     distances = vicsek_distance(frame);
     m_space = metric.impl.ExplicitMetricSpace(distances);
-    %stream = api.Plex4.createVietorisRipsStream(frame, 2, 4, 500);
-    maxmin_selector = api.Plex4.createMaxMinSelector(m_space, numpoints);
+    stream = api.Plex4.createVietorisRipsStream(frame, 2, 4, 500);
+    %maxmin_selector = api.Plex4.createMaxMinSelector(m_space, numpoints);
     stream = api.Plex4.createWitnessStream(maxmin_selector, 2, 1, 300);
     persistence = api.Plex4.getModularSimplicialAlgorithm(3, 2);
     
