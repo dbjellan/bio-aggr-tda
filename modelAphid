@@ -1,9 +1,9 @@
-function modelAphid()
-N = 30; %number of aphids desired
+function aphidData = modelAphid(T, N)
+%N = 30; %number of aphids desired
 r = 20; %radius of experimental arena, in cm
-T = 30; %number of desired timesteps
+%T = 30; %number of desired timesteps
 
-%bloody ridiculous constants needed for the model
+%bloody ridiculous constants needed for the model, all from pea aphid paper
 psmNaught = 0.1587;
 psmInfinite = 0.3552;
 dsm = 0.79; %in cm
@@ -24,13 +24,15 @@ drho = 0.44; %in cm
 %INITIALISE THE APHIDS
 %aphids by (1) angle, (2) length, (3) boolean indicated stopped (0) or moving
 %(1), (4) rectangular coordinates in form x + yi, (5) direction of motion
-%from the horizontal
+%from the horizontal (sum of angles)
 aphids = zeros(N, 5); 
 aphids(:, 1) = r*rand(N, 1);
 aphids(:, 2) = 2*pi*rand(N, 1);
 %about half of aphids start moving, half start stopped
 vec = zeros(N, 1);
+aphidNumbers = zeros(N, 1); %vector to count the aphids, gts stuck into the big matrix each frame
 for i = 1:N %loop to build vector for stopped/moving, also to put in rectangular coordinates
+    aphidNumbers(i) = i;
     x = aphids(i, 1)*sin(aphids(i, 2));
     y = aphids(i, 1)*cos(aphids(i, 2));
     aphids(i, 4) = x + y*1i;
@@ -40,10 +42,18 @@ end
 aphids(:, 3) = vec;
 aphids(:, 5) = vec; %only one angle so far, so same as objective
 
-plotAphids(aphids(:, 4), r);
+%plotAphids(aphids(:, 4), r);
+aphidData = zeros(N, 4);
+aphidData(:, 1) = aphidNumbers;
+aphidData(:, 2) = ones(N, 1); %because this is just for the first frame
+aphidData(:, 3) = real(aphids(:, 4));
+aphidData(:, 4) = imag(aphids(:, 4));
 
-for t = 1:T
-
+for t = 1:(T-1)
+    newFrame = zeros(N, 4);
+    newFrame(:, 1) = aphidNumbers;
+    newFrame(:, 2) = (t+1)*ones(N, 1); 
+    
     %initialise distance matrix
     [Z1,Z2] = meshgrid(aphids(:,4),aphids(:,4));
     dist = abs(Z2-Z1);
@@ -55,7 +65,7 @@ for t = 1:T
     %APHIDS RECALCULATING
     for i = 1:N
         d = min(dist(:, i));
-
+        
         %determine if each aphid is going to move this round
         if aphids(i, 3) == 0 %if the aphid is stopped...
             probChange = psmNaught * exp(-d/dsm)+psmInfinite*(d/(d+changesm)); %psm(d)
@@ -86,8 +96,14 @@ for t = 1:T
        end 
     end
             
-    plotAphids(aphids(:, 4), r);
-    pause(1);
+    %plotAphids(aphids(:, 4), r);
+    %pause(1);
+    
+    
+
+    newFrame(:, 3) = real(aphids(:, 4));
+    newFrame(:, 4) = imag(aphids(:, 4));
+    aphidData = [aphidData; newFrame];
 end
 
 end
