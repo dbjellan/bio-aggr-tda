@@ -1,0 +1,103 @@
+function modelAphid()
+N = 30; %number of aphids desired
+r = 20; %radius of experimental arena, in cm
+T = 30; %number of desired timesteps
+
+%bloody ridiculous constants needed for the model
+psmNaught = 0.1587;
+psmInfinite = 0.3552;
+dsm = 0.79; %in cm
+changesm = 7.39; %in cm
+
+pmsNaught = 0.5508;
+pmsInfinite = 0.128;
+dms = 1.34; %in cm
+
+lNaught = 0.03; %in cm
+lInfinite = 0.13; %in cm
+dl = 0.74; %in cm
+
+rhoNaught = 0.1387;
+rhoInfinite = 0.9013;
+drho = 0.44; %in cm
+
+%INITIALISE THE APHIDS
+%aphids by (1) angle, (2) length, (3) boolean indicated stopped (0) or moving
+%(1), (4) rectangular coordinates in form x + yi, (5) direction of motion
+%from the horizontal
+aphids = zeros(N, 5); 
+aphids(:, 1) = r*rand(N, 1);
+aphids(:, 2) = 2*pi*rand(N, 1);
+%about half of aphids start moving, half start stopped
+vec = zeros(N, 1);
+for i = 1:N %loop to build vector for stopped/moving, also to put in rectangular coordinates
+    x = aphids(i, 1)*sin(aphids(i, 2));
+    y = aphids(i, 1)*cos(aphids(i, 2));
+    aphids(i, 4) = x + y*1i;
+    bool = rand > 0.5; %elegant solution from http://kr.mathworks.com/matlabcentral/newsreader/view_thread/336582
+    vec(i) = bool;
+end
+aphids(:, 3) = vec;
+aphids(:, 5) = vec; %only one angle so far, so same as objective
+
+plotAphids(aphids(:, 4), r);
+
+for t = 1:T
+
+    %initialise distance matrix
+    [Z1,Z2] = meshgrid(aphids(:,4),aphids(:,4));
+    dist = abs(Z2-Z1);
+    %set diagonal to 2*radius+1 length, so 0 diagonal won't trip up nearest
+    %neighbor find
+    dist(logical(eye(size(dist)))) = 2*r+1;
+
+
+    %APHIDS RECALCULATING
+    for i = 1:N
+        d = min(dist(:, i));
+
+        %determine if each aphid is going to move this round
+        if aphids(i, 3) == 0 %if the aphid is stopped...
+            probChange = psmNaught * exp(-d/dsm)+psmInfinite*(d/(d+changesm)); %psm(d)
+            bool = rand > probChange;
+            if bool
+                aphids(i, 3) = 1;
+            end
+        else %if the aphid is moving
+            probChange = pmsInfinite+(pmsNaught-pmsInfinite)*exp(-d/dms);%pms(d)
+            bool = rand > probChange;
+            if bool
+                aphids(i, 3) = 0;
+            end
+        end
+        
+       %if the aphid is going to move, determine angle and distance, update
+       %coords
+       if aphids(i,3) == 1
+           length = lInfinite + (lNaught - lInfinite)*exp(-d/dl);
+           rho = rhoInfinite + (rhoNaught - rhoInfinite)*exp(-d/drho);
+           
+           aphids(i, 5) = aphids(i, 5) + rho;
+           newX = length*sin(aphids(i, 5));
+           newY = length*cos(aphids(i, 5));
+           aphids(i, 4) = aphids(i, 4) + newX + 1i * newY;
+           aphids(i, 1) = rho;
+           aphids(i, 2) = length;
+       end 
+    end
+            
+    plotAphids(aphids(:, 4), r);
+    pause(1);
+end
+
+end
+
+function plotAphids(coords, r)
+coordsX = real(coords);
+coordsY = imag(coords);
+
+% plots current frame
+scatter(coordsX, coordsY, 'filled');
+title(strcat('Aphids'));
+axis([-r r -r r]);
+end
