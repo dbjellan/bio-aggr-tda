@@ -1,9 +1,9 @@
 function make_vicsek_crocker(ourdata, dimension, fname, maxfilt)
     load_javaplex;
     % set up dimensions of matrix for crocker plot
-    filtrationgap = .005;
+    filtrationgap = .05;
     filtrationtimes = 0:filtrationgap:maxfilt;
-    timesamples = 300;
+    timesamples = 100;
     crocker_dat = 0*ones(length(filtrationtimes), timesamples);
     endstep = size(ourdata, 2)/3;
     
@@ -17,7 +17,7 @@ function make_vicsek_crocker(ourdata, dimension, fname, maxfilt)
         %m_space = metric.impl.EuclideanMetricSpace(thisframe);
         distances = vicsek_distance(thisframe);
         m_space = metric.impl.ExplicitMetricSpace(distances);
-        stream = api.Plex4.createVietorisRipsStream(m_space, 2, maxfilt, 300);
+        stream = api.Plex4.createVietorisRipsStream(m_space, 2, maxfilt, 100);
         persistence = api.Plex4.getModularSimplicialAlgorithm(3, 2);
         intervals = persistence.computeIntervals(stream);
 
