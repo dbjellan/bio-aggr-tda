@@ -27,4 +27,4 @@ for n = 1:(N-1)
 end
 
 values = diffMatrix./numel(diffMatrix)
-csvwrite(strcat('h', num2str(dimension), 'differences', '.csv'), crocker_dat)
+csvwrite(strcat('h', num2str(dimension), 'differences', '.csv'), values)
