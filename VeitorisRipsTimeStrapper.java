@@ -91,6 +91,11 @@ public class VeitorisRipsTimeStrapper {
         int[] yindxs = null;
         double[] arrPoint = null;
         int k = 0;
+        int indxoffset = 0;
+
+        int[] xoindxs = null;
+        int[] yoindxs = null;
+        int[] xyoindxs = null;
 
         for(int i = 1; i < this.datapoints.size(); i++) {
             ypoints = this.datapoints.get(i);
@@ -119,22 +124,28 @@ public class VeitorisRipsTimeStrapper {
             }
 
             xyindxs = ArrayUtility.union(xindxs, yindxs);
+            xoindxs = new int[xindxs.length];
+            for (int j= 0; j < xindxs.length; j++) {
+                xoindxs[j] = xindxs[j]+indxoffset;
+            }
+            yoindxs = new int[yindxs.length];
+            for (int j= 0; j < yindxs.length; j++) {
+                yoindxs[j] = yindxs[j]+indxoffset;
+            }
+            xyoindxs = new int[xyindxs.length];
+            for (int j= 0; j < xyindxs.length; j++) {
+                xyoindxs[j] = xyindxs[j]+indxoffset;
+            }
 
             XTracker = new SimpleHomologyBasisTracker<Simplex>(intField, SimplexComparator.getInstance(), 0, this.maxDimension);
-            if (this.use3TorusDistance)
-                XStream = new FlexibleVietorisRipsStream<Integer>(new ExplicitMetricSpace(makeVicsekDistanceMatrix(ArrayUtility.getSubset(points, xindxs))), this.maxDistance, maxDimension + 1, new IncreasingLinearConverter(20, maxDistance), xindxs);
-            else
-                XStream = new VietorisRipsStream<double[]>(new EuclideanMetricSpace(ArrayUtility.getSubset(points, xindxs)), this.maxDistance, maxDimension + 1, xindxs);
+            XStream = new FlexibleVietorisRipsStream<Integer>(new ExplicitMetricSpace(makeVicsekDistanceMatrix(ArrayUtility.getSubset(points, xindxs))), this.maxDistance, maxDimension + 1, new IncreasingLinearConverter(1, maxDistance, maxDistance), xoindxs);
             XStream.finalizeStream();
             for (Simplex x: XStream) {
                 XTracker.add(x, XStream.getFiltrationIndex(x));
             }
 
             YTracker = new SimpleHomologyBasisTracker<Simplex>(intField, SimplexComparator.getInstance(), 0, this.maxDimension);
-            if (this.use3TorusDistance)
-                YStream = new FlexibleVietorisRipsStream<Integer>(new ExplicitMetricSpace(makeVicsekDistanceMatrix(ArrayUtility.getSubset(points, yindxs))), this.maxDistance, maxDimension + 1, new IncreasingLinearConverter(20, maxDistance), yindxs);    
-            else
-                YStream = new VietorisRipsStream<double[]>(new EuclideanMetricSpace(ArrayUtility.getSubset(points, yindxs)), this.maxDistance, maxDimension + 1, yindxs);
+            YStream = new FlexibleVietorisRipsStream<Integer>(new ExplicitMetricSpace(makeVicsekDistanceMatrix(ArrayUtility.getSubset(points, yindxs))), this.maxDistance, maxDimension + 1, new IncreasingLinearConverter(1, maxDistance, maxDistance), yoindxs);    
             YStream.finalizeStream();
             k = 0;
             for (Simplex y: YStream) {
@@ -144,10 +155,7 @@ public class VeitorisRipsTimeStrapper {
 
             System.out.println("simplices in y complex: " + k);
 
-            if (this.use3TorusDistance)
-                ZStream = new FlexibleVietorisRipsStream<Integer>(new ExplicitMetricSpace(makeVicsekDistanceMatrix(ArrayUtility.getSubset(points, xyindxs))), this.maxDistance, maxDimension + 1, new IncreasingLinearConverter(20, maxDistance), xyindxs);
-            else
-                ZStream = new VietorisRipsStream<double[]>(new EuclideanMetricSpace(ArrayUtility.getSubset(points, xyindxs)), maxDistance, maxDimension + 1, xyindxs);
+            ZStream = new FlexibleVietorisRipsStream<Integer>(new ExplicitMetricSpace(makeVicsekDistanceMatrix(ArrayUtility.getSubset(points, xyindxs))), this.maxDistance, maxDimension + 1, new IncreasingLinearConverter(1, maxDistance, maxDistance), xyoindxs);
             ZStream.finalizeStream();
 
             ZTracker = new SimpleHomologyBasisTracker<Simplex>(intField, SimplexComparator.getInstance(), 0, this.maxDimension);
@@ -168,16 +176,18 @@ public class VeitorisRipsTimeStrapper {
             if (result == null) {
                 result = XTracker.getStateWithoutFiniteBarcodes(i - 1);
                 result.setUseLeftClosedIntervals(true);
-                result.setUseRightClosedIntervals(true);                
+                result.setUseRightClosedIntervals(true);
             }
 
             result = InducedHomologyMappingUtility.include(XTracker, ZTracker, YTracker, result, chainModule, (i - 1), i);
-
             XStream = YStream;
             XTracker = YTracker;
+            indxoffset += points.length;
         }
 
         result.endAllIntervals(this.datapoints.size() - 1);
+        System.out.println("Zigzag persistence: ");
+        System.out.println(result.getAnnotatedBarcodes().toString());
         return BarcodeCollection.forgetGeneratorType(result.getAnnotatedBarcodes().filterByMaxDimension(maxDimension));
     }
 
