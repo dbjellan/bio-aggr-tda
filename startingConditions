@@ -1,0 +1,29 @@
+%uncomment load javaplex and data for first run, then recomment to shorten runtime
+%load_javaplex;
+%aphiddata = load('aphiddata.csv');
+%framenum = 2; %starting frame
+
+%since this is designed to work with code built for the original aphid
+%data, there's a bizarre ordering: the columns go
+
+%video number | aphid number | frame number | x coord | y coord
+firstFrames = [];
+
+for k = 1:9 %looping through all experiments
+    % grabs the [frame number, x coord, y coord] of designated 
+    % experiment and frame
+    indx = (aphiddata(:,1) == k);
+    sim1fxy = aphiddata(indx, [1, 2, 3, 4, 5]);
+    indxFrame = (sim1fxy(:,3) == 2);
+    frame = sim1fxy(indxFrame, [1, 2, 3, 4, 5]);
+    
+    elementsInFrame = size(frame);
+    for j = 1:elementsInFrame(1)
+        frame(j, 2) = j;
+    end
+    
+    firstFrames = [firstFrames; frame];
+end
+
+
+csvwrite('firstFrames.csv', firstFrames)
