@@ -1,6 +1,6 @@
 %uncomment load javaplex and data for first run, then recomment to shorten runtime
 %load_javaplex;
-%aphiddata = load('aphiddata.csv');
+aphiddata = load('fullaphiddata.csv');
 %framenum = 2; %starting frame
 
 %since this is designed to work with code built for the original aphid
@@ -10,15 +10,15 @@
 firstFrames = [];
 
 for k = 1:9 %looping through all experiments
-    % grabs the [frame number, x coord, y coord] of designated 
+    % grabs the [video number, aphid number, frame number, x coord, y coord, xdir, ydir, moving boolean] of designated 
     % experiment and frame
     indx = (aphiddata(:,1) == k);
-    sim1fxy = aphiddata(indx, [1, 2, 3, 4, 5]);
+    sim1fxy = aphiddata(indx, [1, 2, 3, 4, 5, 7, 8, 9]);
     indxFrame = (sim1fxy(:,3) == 2);
-    frame = sim1fxy(indxFrame, [1, 2, 3, 4, 5]);
+    frame = sim1fxy(indxFrame, [1, 2, 3, 4, 5, 6, 7, 8]);
     
     elementsInFrame = size(frame);
-    for j = 1:elementsInFrame(1)
+    for j = 1:elementsInFrame(1) %renumbers all the aphids so they don't have the funky numbering of the original data
         frame(j, 2) = j;
     end
     
