@@ -1,0 +1,25 @@
+%REMEMBER: if you're calling this for the purposes of generating data and
+%don't want pictures, then be sure to comment out the plot and pause lines
+%in modelAphid! (there are two plot commands, one in the loop and one above.)
+
+%since this is designed to work with code built for the original aphid
+%data, there's a bizarre ordering: the columns go
+
+%video number | aphid number | frame number | x coord | y coord
+
+%clc
+
+numFrames = 1; %number of frames you want in each experiment
+
+aphidData = [];
+firstFrames = load('firstFrames.csv');
+
+for k = 1:9 %there are only nine experiments. there have only ever been nine experiments. 'there are seven experiments,' they tell you. why do you have so much data?
+    indx = (firstFrames(:,1) == k);
+    init = firstFrames(indx, [2, 4, 5, 6, 7, 8]); %aphid number, xcoord, ycoord, xdir, ydir, moving
+    vec = k*ones(numFrames*N, 1);
+    nextVideo = [vec, modelAphidSeed(numFrames, init)];
+    aphidData = [aphidData; nextVideo];
+end
+
+csvwrite('nonsenseData.csv', aphidData)
