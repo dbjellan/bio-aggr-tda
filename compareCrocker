@@ -1,4 +1,4 @@
-N = 2; %number of plots to compare
+N = 9; %number of plots to compare
 
 diffMatrix = zeros(N, N); %diagonal matrix which stores the pairwise differences between the plots
 dimension = 1; %h dimension of plots you want (only needed if part of the file name of the crocker data)
@@ -6,12 +6,14 @@ dimension = 1; %h dimension of plots you want (only needed if part of the file n
 %just to grab the sizes
 sample = load(strcat('h', num2str(dimension), 'exp1.csv'));
 
-vector = zeros(10, size(sample, 1), size(sample, 2)); %keeps track of the input data
+sizeSamp = size(sample);
+
+vector = zeros(10, sizeSamp(1), sizeSamp(2)); %keeps track of the input data
 
 vector(1, :, :) = sample;
 
 for j = 2:N
-    vector(j, :, :) = load(strcat('h', num2str(dimension), 'exp', num2str(j), '.csv'));
+    vector(j, :, :) = load(strcat('experimental', 'h', num2str(dimension), 'exp', num2str(j), '.csv'));
 end
 
 stageOneDone = 1
@@ -26,5 +28,5 @@ for n = 1:(N-1)
     end
 end
 
-values = diffMatrix./numel(diffMatrix)
-csvwrite(strcat('h', num2str(dimension), 'differences', '.csv'), values)
+values = diffMatrix./(sizeSamp(1) * sizeSamp(2))
+csvwrite(strcat('experimental', 'h', num2str(dimension), 'differences', '.csv'), values)

@@ -1,54 +1,59 @@
-function aphidData = modelAphid(T, N)
-%N = 30; %number of aphids desired
-r = 2; %radius of experimental arena, in cm
-%T = 30; %number of desired timesteps
+function aphidData = modelAphid(T, init, N)
+%N is number of aphids desired, T is number of desired timesteps
+r = .2; %radius of experimental arena, in m
 
 %bloody ridiculous constants needed for the model, all from pea aphid paper
+
 psmNaught = 0.1587;
 psmInfinite = 0.3552;
-dsm = 0.79; %in cm
-changesm = 7.39; %in cm
+dsm = 0.0079; %in m
+changesm = .0739; %in m
 
 pmsNaught = 0.5508;
 pmsInfinite = 0.128;
-dms = 1.34; %in cm
+dms = .0134; %in m
 
-lNaught = 0.03; %in cm
-lInfinite = 0.13; %in cm
-dl = 0.74; %in cm
+lNaught = .0003; %in m
+lInfinite = .0013; %in m
+dl = 0.0074; %in m
 
-rhoNaught = 0.1387;
-rhoInfinite = 0.9013;
-drho = 0.44; %in cm
 
 %INITIALISE THE APHIDS
 %aphids by (1) angle, (2) length, (3) boolean indicated stopped (0) or moving
 %(1), (4) rectangular coordinates in form x + yi, (5) direction of motion
 %from the horizontal (sum of angles)
 aphids = zeros(N, 5);
-aphids(:, 1) = r*rand(N, 1);
-aphids(:, 2) = 2*pi*rand(N, 1);
-%about half of aphids start moving, half start stopped
-vec = zeros(N, 1);
-aphidNumbers = zeros(N, 1); %vector to count the aphids, gets stuck into the big matrix each frame
-for i = 1:N %loop to build vector for stopped/moving, also to put in rectangular coordinates
-    aphidNumbers(i) = i;
-    x = aphids(i, 1)*sin(aphids(i, 2));
-    y = aphids(i, 1)*cos(aphids(i, 2));
-    aphids(i, 4) = x + y*1i;
-    bool = rand > 0.5; %elegant solution from http://kr.mathworks.com/matlabcentral/newsreader/view_thread/336582
-    vec(i) = bool;
+
+%INIT: (1) aphid number, (2) xcoord, (3) ycoord, (4) xdir, (5) ydir, (6) moving
+
+aphidNumbers = init(:, 1);
+aphids(:, 4) = init(:, 2) + init(:, 3)*1i;
+aphids(:, 3) = init(:, 6);
+
+for i = 1:N
+    
+   %get the angles sorted out
+   x = init(i, 4);
+   y = init(i, 5);
+   angle = tan(y/x);
+   if x < 0
+       angle = angle + pi;
+   end 
+   aphids(i, 1) = angle;
+   aphids(i, 5) = angle;
+   
+   %and the length/vector
+   aphids(i, 2) = sqrt(init(i, 2)^2+init(i, 3)^2);
+   
 end
 
-aphids(:, 3) = vec;
-aphids(:, 5) = vec; %only one angle so far, so same as objective
-
-plotAphids(aphids(:, 4), r);
-aphidData = zeros(N, 4); %filling in first frame into aphidData
-aphidData(:, 1) = aphidNumbers;
-aphidData(:, 2) = ones(N, 1); %because this is just for the first frame
-aphidData(:, 3) = real(aphids(:, 4));
-aphidData(:, 4) = imag(aphids(:, 4));
+ %plotAphids(aphids(:, 4), r, 1); %PLOT LINE ONE
+ 
+ aphidData = zeros(N, 4); %filling in first frame into aphidData
+ aphidData(:, 1) = aphidNumbers;
+ aphidData(:, 2) = ones(N, 1); %because this is just for the first frame
+ aphidData(:, 3) = real(aphids(:, 4));
+ aphidData(:, 4) = imag(aphids(:, 4));
 
 for t = 1:(T-1)
     newFrame = zeros(N, 4);
@@ -69,13 +74,13 @@ for t = 1:(T-1)
         %determine if each aphid is going to move this round
         if aphids(i, 3) == 0 %if the aphid is stopped...
             probChange = psmNaught * exp(-d/dsm)+psmInfinite*(d/(d+changesm)); %psm(d)
-            bool = rand > probChange;
+            bool = rand <= probChange;
             if bool
                 aphids(i, 3) = 1;
             end
         else %if the aphid is moving
             probChange = pmsInfinite+(pmsNaught-pmsInfinite)*exp(-d/dms);%pms(d)
-            bool = rand > probChange;
+            bool = rand <= probChange;
             if bool
                 aphids(i, 3) = 0;
             end
@@ -88,9 +93,11 @@ for t = 1:(T-1)
         %coords
         if aphids(i,3) == 1
             length = lInfinite + (lNaught - lInfinite)*exp(-d/dl);
-            rho = rhoInfinite + (rhoNaught - rhoInfinite)*exp(-d/drho);
+            %rho = rhoInfinite + (rhoNaught - rhoInfinite)*exp(-d/drho);
+            angle = wrappedCauchy(d);
             
-            aphids(i, 5) = aphids(i, 5) + rho;
+            %aphids(i, 5) = aphids(i, 5) + rho;
+            aphids(i, 5) = aphids(i, 5) + angle;
             newX = real(aphids(i, 4)) + length*sin(aphids(i, 5));
             newY = imag(aphids(i, 4)) + length*cos(aphids(i, 5));
             
@@ -109,6 +116,11 @@ for t = 1:(T-1)
                 line = [real(line); imag(line)];
                 
                 pointIntersect = InterX(circle,line);
+                
+                if numel(pointIntersect) == 0
+                    zi
+                    zf
+                end
                 
                 tanAngle = 0;
                 %find tangent line by finding point where it hits x axis
@@ -188,20 +200,20 @@ for t = 1:(T-1)
                 finalLocation = reflectLength*cos(toHorizontal) + 1i * reflectLength*sin(toHorizontal);
                 finalLocation = finalLocation + pointIntersect(1) + 1i*pointIntersect(2);
                 
-                plotAphids(aphids(:, 4), r);
-                pause(1);
-                
-                
                 aphids(i, 4) = finalLocation;
                 aphids(i, 1) = acos(real(finalLocation)/sqrt(real(finalLocation)^2 + real(finalLocation)^2));
                 aphids(i, 5) = angle;
             else
+                %plotAphids(aphids(:, 4), r);
                 aphids(i, 4) = newX + 1i * newY;
-                aphids(i, 1) = rho;
+                aphids(i, 1) = angle;
                 aphids(i, 2) = length;
             end
         end
     end
+    
+    %plotAphids(aphids(:, 4), r, t+1); %PLOT LINE TWO
+    %pause(1);
     
     newFrame(:, 3) = real(aphids(:, 4));
     newFrame(:, 4) = imag(aphids(:, 4));
@@ -210,16 +222,16 @@ for t = 1:(T-1)
 end
 end
 
-function plotAphids(coords, r)
+function plotAphids(coords, r, t)
 coordsX = real(coords);
 coordsY = imag(coords);
 
 theta = linspace(0,2*pi,1000);
 circle = r*exp(1i*theta);
 
-% plots current frame
+%plots current frame
 scatter(coordsX, coordsY, 'filled');
-title(strcat('Aphids'));
+title(strcat('Aphids ', t));
 axis([-r r -r r]);
 hold on; plot(circle,'b-'); hold off;
 end
@@ -312,4 +324,63 @@ end
 %for float/double equality testing
 function bool = testEquality (argOne, argTwo, epsilon)
 bool = (argOne < argTwo + epsilon) && (argOne > argTwo - epsilon);
+end
+
+
+function angle = wrappedCauchy(d)
+rhoNaught = 0.1387;
+rhoInfinite = 0.9013;
+drho = 0.0044; %in cm
+
+num = 1000;
+rho = rhoInfinite + (rhoNaught - rhoInfinite)*exp(-d/drho);
+angle = getRandomCauchy(rho, num);
+end
+
+%function that pretends to give you an inverse of the cumulative
+%distribution function of a wrapped cauchy distribution. It actually is
+%giving a bunch of values which correspond to chunks of the y-axis,
+%essentially sorting all x values into a finite number of bins. then
+%calling a random number between -.5 and .5 will give you a response out of
+%the cauchy distribution.
+function xpoints = cauchyBins(rho, n)
+%n = 10; %number of bins (starting small for testing)
+
+xpoints = zeros(n, 1); %will hold the midpoints of the x regions corresponding to equally spaced chunks of the y axis
+
+samplenumber = 1000;
+
+xsamples = (2*pi).*rand(samplenumber, 1) - pi; %change to 1000 for more accuracy
+ysamples = zeros(samplenumber, 1);
+for j = 1:samplenumber
+    ysamples(j) = (1/(2*pi)) * (atan((-sin(xsamples(j)/2) - rho * sin(xsamples(j)/2))/(-cos(xsamples(j)/2) + rho * cos(xsamples(j)/2))) - atan((sin(xsamples(j)/2) + rho * sin(xsamples(j)/2))/(-cos(xsamples(j)/2) + rho * cos(xsamples(j)/2))));
+end
+
+endpoints = zeros(n + 1, 1);
+endpoints(1) = -pi;
+endpoints(n+1) = pi;
+
+%make a vector with n+1 entries
+%put -pi in the 0th/1st position and pi in the nth
+%then for each intermediary point, find the thing in ysamples closest
+%to i* 1/n and put that in the ith place
+%and then take the midpoints and put them in xpoints
+
+for i = 2:n
+    y = -.5 + (i-1)/n;
+    [~, index] = min(abs(ysamples - y));
+    idx = index(1);
+    endpoints(i) = xsamples(idx);
+    xpoints(i) = (endpoints(i-1)+ endpoints(i))/2;
+end
+
+xpoints(n) = (endpoints(n) + endpoints(n+1))/2;
+
+end
+
+function r = getRandomCauchy(rho, n)
+%calculate bin number (note that these index from 1 to n, not 0 to n-1)
+k = ceil(rand*n);
+xpoints = cauchyBins(rho, n);
+r = xpoints(k);
 end

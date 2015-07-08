@@ -1,0 +1,49 @@
+N = 9; %number of plots to compare
+
+diffMatrix12 = zeros(N, N); %diagonal matrix which stores the pairwise differences between the plots
+diffMatrix13 = diffMatrix12;
+diffMatrix23 = diffMatrix12;
+dimension = 0; %h dimension of plots you want (only needed if part of the file name of the crocker data)
+
+%just to grab the sizes
+sample = load(strcat('h', num2str(dimension), 'exp1.csv'));
+
+sizeSamp = size(sample);
+
+vector1 = zeros(10, sizeSamp(1), sizeSamp(2)); %keeps track of the input data
+vector2 = vector1;
+vector3 = vector1;
+
+vector1(1, :, :) = sample;
+vector2(1, :, :) = sample;
+vector3(1, :, :) = sample;
+
+for j = 2:N
+    vector1(j, :, :) = load(strcat('h', num2str(dimension), 'exp', num2str(j), '.csv'));
+    vector2(j, :, :) = load(strcat('non', 'h', num2str(dimension), 'exp', num2str(j), '.csv'));
+    vector3(j, :, :) = load(strcat('experimental', 'h', num2str(dimension), 'exp', num2str(j), '.csv'));
+end
+
+stageOneDone = 1
+
+for n = 1:N
+    for k = 1:N
+        diff = abs(vector1(n, :, :) - vector2(k, :, :));
+        diffMatrix12(n, k) = sum(diff(:));
+        
+        diff = abs(vector1(n, :, :) - vector3(k, :, :));
+        diffMatrix13(n, k) = sum(diff(:));
+        
+        diff = abs(vector2(n, :, :) - vector3(k, :, :));
+        diffMatrix23(n, k) = sum(diff(:));
+    end
+end
+
+values = diffMatrix12./(sizeSamp(1) * sizeSamp(2));
+csvwrite(strcat('ModelAndNon', 'h', num2str(dimension), 'differences', '.csv'), values)
+
+values = diffMatrix13./(sizeSamp(1) * sizeSamp(2));
+csvwrite(strcat('ModelAndExperimental', 'h', num2str(dimension), 'differences', '.csv'), values)
+
+values = diffMatrix23./(sizeSamp(1) * sizeSamp(2));
+csvwrite(strcat('ExperimentalAndNon', 'h', num2str(dimension), 'differences', '.csv'), values)
