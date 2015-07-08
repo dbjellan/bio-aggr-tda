@@ -10,21 +10,24 @@ import edu.stanford.math.primitivelib.algebraic.impl.ModularIntField;
 import edu.stanford.math.primitivelib.autogen.formal_sum.IntAlgebraicFreeModule;
 import edu.stanford.math.primitivelib.autogen.formal_sum.IntSparseFormalSum;
 import edu.stanford.math.primitivelib.autogen.algebraic.IntAbstractField;
+import edu.stanford.math.primitivelib.autogen.pair.ObjectObjectPair;
 import edu.stanford.math.plex4.streams.impl.VietorisRipsStream;
 import edu.stanford.math.plex4.streams.impl.FlexibleVietorisRipsStream;
+import edu.stanford.math.plex4.streams.impl.FlagComplexStream;
+import edu.stanford.math.plex4.homology.chain_basis.SimplexComparator;
+import edu.stanford.math.plex4.homology.zigzag.bootstrap.InducedHomologyMappingUtility;
 import edu.stanford.math.plex4.homology.barcodes.BarcodeCollection;
 import edu.stanford.math.plex4.homology.barcodes.AnnotatedBarcodeCollection;
 import edu.stanford.math.plex4.homology.zigzag.SimpleHomologyBasisTracker;
 import edu.stanford.math.plex4.homology.zigzag.IntervalTracker;
 import edu.stanford.math.plex4.homology.chain_basis.Simplex;
+import edu.stanford.math.plex4.homology.filtration.IncreasingLinearConverter;
+import edu.stanford.math.plex4.homology.barcodes.Interval;
+import edu.stanford.math.plex4.utility.ArrayUtility;
 import edu.stanford.math.plex4.metric.impl.EuclideanMetricSpace;
 import edu.stanford.math.plex4.metric.impl.ExplicitMetricSpace;
-import edu.stanford.math.plex4.homology.chain_basis.SimplexComparator;
-import edu.stanford.math.plex4.homology.zigzag.bootstrap.InducedHomologyMappingUtility;
-import edu.stanford.math.plex4.utility.ArrayUtility;
 import edu.stanford.math.plex4.metric.interfaces.AbstractSearchableMetricSpace;
-import edu.stanford.math.plex4.homology.filtration.IncreasingLinearConverter;
-import edu.stanford.math.plex4.streams.impl.FlagComplexStream;
+
 
 public class VeitorisRipsTimeStrapper {
 
@@ -36,6 +39,8 @@ public class VeitorisRipsTimeStrapper {
     public final int maxDimension;
     public final double maxDistance;
     public final boolean use3TorusDistance;
+
+    public IntervalTracker<Integer, Integer, IntSparseFormalSum<Simplex>> result = null;
 
     public VeitorisRipsTimeStrapper(int maxDimension, double maxDistance, boolean use3TorusDistance) {
         this.maxDimension = maxDimension;
@@ -71,6 +76,10 @@ public class VeitorisRipsTimeStrapper {
         this.datapoints.add(points);
     }
 
+    public List<ObjectObjectPair<Interval<Integer>, IntSparseFormalSum<Simplex>>> getIntervalsWithGenerators(int dimension) {
+        return result.getFiniteAnnotatedBarcodes().getIntervalGeneratorPairsAtDimension(dimension);
+    }
+
 
     public BarcodeCollection<Integer> performTimeStrap() {
         SimpleHomologyBasisTracker<Simplex> ZTracker = null;
@@ -80,8 +89,6 @@ public class VeitorisRipsTimeStrapper {
         FlagComplexStream XStream = null;
         FlagComplexStream YStream = null;
         FlagComplexStream ZStream = null;
-
-        IntervalTracker<Integer, Integer, IntSparseFormalSum<Simplex>> result = null;
 
         double[][] points;
         double[][] xpoints = null;
