@@ -2,81 +2,155 @@ function testRebound
 
 sample = 1000; % Number of points for numerical computations
 
-%zi = 3+4i;
-%zi = -0.5721 - 1.8929*1i;
-%zf = -0.5195 - 1.9715*1i;
-%zf = 8+9i;
-
+%so well behaved, merlin.
 % zi = 0.4806 - 1.8985i;
 % zf = 0.5394 - 1.9445i;
 
-% zi = -0.1816 + 1.9937i;
-% zf = -0.0773 + 2.0014i;
+%works fine
 % zi = -0.2544 + 1.9235i;
 % zf =  -0.1814 + 1.9935i;
 
-zi = 1.7727 + 0.8384i;
-zf = 1.8417 + 0.8386i;
+%works
+% zi = 1.7727 + 0.8384i;
+% zf = 1.8417 + 0.8386i;
 
-%REALLY SCREWED UP
-% zi = 1.7727 + 0*1i;
-% zf = 1.8417 + 0*1i;
+%works
+% zi = 0.8 + 0*1i;
+% zf = 2.3 + 0*1i;
 
-%gets NaN-y.
+%works now
 % zi = 0 + 1.8*1i;
 % zf = 0 + 2.1*1i;
 
-line = linspace(zf, zi,sample);
+%YAY I think it works now!
+% zi = -0.5721 - 1.8929*1i;
+% zf = -0.5195 - 1.9715*1i;
 
-r = 2;
+
+%ones still giving ttrouble after all the fiexes, possibly rounding errors
+% zi = -0.1437 + 0.1391i;
+% zf = -0.1431 + 0.1403i;
+
+% zi = 0.1978 - 0.0295i;
+% zf = 0.1984 - 0.0284i;
+
+%this one actually does start outside of circle, almost certainly due to
+%rounding errors
+zi = -0.2000 - 0.0007i;
+zf = -0.2013 - 0.0005i;
+
+line = linspace(zf, zi, sample);
+
+r = .2;
 theta = linspace(0,2*pi,sample);
 circle = r*exp(1i*theta);
 % line = aphids(i, 4) + linspace(0,(newX + 1i*newY)-aphids(i, 4),sample);
 
-figure; hold on; plot(circle,'b-'); plot(line,'r-'); hold off;
+%line = [real(line); imag(line)]
+figure; hold on; plot(circle,'b-'); plot(real(line),imag(line),'r-'); hold off;
+hold on; plot(real(zi),imag(zi),'ko'); hold off;
+%axis([-r r -r r]);
 circle = [real(circle);imag(circle)];
-line = [real(line);imag(line)];
-pointIntersect = InterX(circle,line)
+line = [real(line); imag(line)];
+%line = [imag(line); real(line)]
+pointIntersect = InterX(circle,line);
 hold on; plot(pointIntersect(1),pointIntersect(2),'ko'); hold off;
 
-                mVector = 0;
-                %find tangent line by finding point where it hits x axis
-                if (pointIntersect(2) == 0 && (pointIntersect(1) == 1 || pointIntersect(1) == -1))
-                   %angle = pi/2;
-                   mTangent = 0;
-                elseif (pointIntersect(1) == 0 && (pointIntersect(2) == 1 || pointIntersect(2) == -1))
-                   %angle = 0;
-                   mTangent = 0;
-                   mVector = pi/2;
-                else
-                   angle = atan(pointIntersect(2)/pointIntersect(1));
-                   if (pointIntersect(1) < 0) %because arctan doesn't work in qII & qIII
-                       angle = angle + pi;
-                   end
-                   h = r/cos(angle); %point of intersection of tan with x axis
-                   mTangent = pointIntersect(2)/(pointIntersect(1) - h);
-                end
+%origDistance = sqrt((imag(zf) - imag(zi))^2 + (real(zf)- real(zi)^2))
+
+%mVector = 0;
+tanAngle = 0;
+%find tangent line by finding point where it hits x axis
+%sides
+if (testEquality(pointIntersect(2),0, 0.001))
+    angle = atan((imag(zf) - imag(zi))/(real(zf)- real(zi)));
+%     if testEquality(angle, 0, 0.0001)
+%         angle = pi/2
+%     end
+    angleSign = (real(zf)-real(zi))/abs(real(zf)-real(zi)); %zf-zi is intentional, not a typo
+    if pointIntersect(1) < 0
+        k = -1;
+        c = 1;
+    else
+        k = 1;
+        c = -1;
+    end
+%top&bottom
+elseif (testEquality(pointIntersect(1), 0, 0.001))
+    if (real(zf)- real(zi) == 0)
+        %angle = pi/ 2 * atan((real(zf)- real(zi))/(imag(zf) - imag(zi)))
+        angle = pi/2; %because if it's going through the pole vertically, this is the ONLY angle you might want
+    else
+        angle = atan((imag(zf) - imag(zi))/(real(zf)- real(zi)));
+    end
+    
+    angleSign = real(zi) - real(zf);
+    if angleSign ~= 0
+        angleSign = angleSign/abs(real(zi) - real(zf));
+    end
+    
+    if angleSign > 0
+        k = -1;
+        c = 1;
+    else
+        k = 1;
+        c = 1;
+    end
+else
+    c = pointIntersect(1)/abs(pointIntersect(1)); %+1 in QI, QIV; -1 in QII, QIII
+    k = pointIntersect(1)*pointIntersect(2)/(abs(pointIntersect(1)*pointIntersect(2))); %+1 in QI, QIII; -1 in QII, QIV
+    
+    angle = atan(pointIntersect(2)/pointIntersect(1));
+    if (c < 0) %because arctan doesn't work in qII & qIII
+        angle = angle + pi;
+    end
+    h = r/cos(angle); %point of intersection of tan with x axis
+    mTangent = pointIntersect(2)/(pointIntersect(1) - h);
+    
+    mVector = (pointIntersect(2) - imag(zi))/(pointIntersect(1) - real(zi));
+    %find angle between vector and tangent line, for reflection
+    angle = abs(atan((mTangent - mVector)/(1 + mVector * mTangent)));
+    %angle = abs((mTangent - mVector)/(1 + mVector * mTangent));
+    
+    %mTangent;
+    tanAngle = abs(atan(mTangent));
+    
+    %look at line perpendicular to tangent, see if the point the vector
+    %starts at falls above or below; this determines the equation used to
+    %find the angle of reflection
+    yProjected = (1/mTangent)*(pointIntersect(1) - real(zi)) + pointIntersect(2);
+    angleSign = (yProjected - imag(zi))/abs(yProjected - imag(zi));
+    %angleSign = imag(zi) - imag(zf);
+end
+
+if testEquality(angleSign, 0, 0.001)
+    angleSign = 1;
+end
+
+if(k * angleSign > 0)
+    tanAngle = pi - tanAngle;
+end
+
+% c
+% k
+% angleSign
+% tanAngle
+toHorizontal = angleSign * tanAngle + c * angleSign * angle;
+
+%find length of reflected segment
+%reflectLength = abs(zi-zf) - sqrt(real(zi)^2 + imag(zi)^2)
+reflectLength = abs(zi-zf) - sqrt((pointIntersect(1)-real(zi))^2 + (pointIntersect(2)- imag(zi))^2);
+
+%location of endpoint is angle&reflectLength away from origin,
+%transposed by the intersection point
 
 
-                mVector = mVector + (pointIntersect(2) - imag(zi))/(pointIntersect(1) - real(zi));
-                %find angle between vector and tangent line, for reflection
-                angle = abs(atan((mTangent - mVector)/(1 + mVector * mTangent)))
-                %angle = abs((mTangent - mVector)/(1 + mVector * mTangent));
+finalLocation = reflectLength*cos(toHorizontal) + 1i * reflectLength*sin(toHorizontal);
+%finalLocation = reflectLength*sin(angle) + 1i * reflectLength*cos(angle)
+finalLocation = finalLocation + pointIntersect(1) + 1i*pointIntersect(2);
 
-                %find length of reflected segment
-                %reflectLength = abs(zi-zf) - sqrt(real(zi)^2 + imag(zi)^2)
-                reflectLength = abs(zi-zf) - sqrt((pointIntersect(1)-real(zi))^2 + (pointIntersect(2)- imag(zi))^2)
-
-                %location of endpoint is angle&reflectLength away from origin,
-                %transposed by the intersection point
-                mTangent
-                atan(mTangent)
-                finalLocation = reflectLength*cos(angle+(atan(mTangent))) + 1i * reflectLength*sin(angle+(atan(mTangent)))
-                %finalLocation = reflectLength*sin(angle) + 1i * reflectLength*cos(angle)
-                finalLocation = finalLocation + pointIntersect(1) + 1i*pointIntersect(2)
-
-                lineTwo = linspace(finalLocation, pointIntersect(1) + 1i*pointIntersect(2), sample);
-                hold on; plot(lineTwo,'r-'); plot(real(finalLocation),imag(finalLocation),'ko'); hold off;
+lineTwo = linspace(finalLocation, pointIntersect(1) + 1i*pointIntersect(2), sample);
+hold on; plot(lineTwo,'r-'); plot(real(finalLocation),imag(finalLocation),'ko'); hold off;
 
 end
 
@@ -163,4 +237,9 @@ function P = InterX(L1,varargin)
     function u = D(x,y)
         u = bsxfun(@minus,x(:,1:end-1),y).*bsxfun(@minus,x(:,2:end),y);
     end
+end
+
+%for float/double equality testing
+function bool = testEquality (argOne, argTwo, epsilon)
+bool = (argOne < argTwo + epsilon) && (argOne > argTwo - epsilon);
 end
