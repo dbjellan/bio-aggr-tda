@@ -9,23 +9,33 @@
 
 %clc
 
-numFrames = 500; %number of frames you want in each experiment
+%numFrames = 4605; %number of frames you want in each experiment
+
+frames = [4605; 5647; 5651; 5409; 5409; 5221; 5332; 5418; 5883];
 
 aphidData = [];
 firstFrames = load('firstFrames.csv');
 
 for k = 1:9 %there are only nine experiments. there have only ever been nine experiments. 'there are seven experiments,' they tell you. why do you have so much data?
-    indx = (firstFrames(:,1) == k);
-    init = firstFrames(indx, [2, 4, 5, 6, 7, 8]); %aphid number, xcoord, ycoord, xdir, ydir, moving
-    dim = size(init);
-    N = dim(1);
-    vec = k*ones(numFrames*N, 1);
-    %nextVideo = [vec, modelAphidSeed(numFrames, init, N)];
-    nextVideo = [vec, modelAphidNoInteraction(numFrames, init, N)];
-    aphidData = [aphidData; nextVideo];
+    for m = 1:10 
+        numFrames = frames(k);
+        indx = (firstFrames(:,1) == k);
+        init = firstFrames(indx, [2, 4, 5, 6, 7, 8]); %aphid number, xcoord, ycoord, xdir, ydir, moving
+        dim = size(init);
+        N = dim(1);
+        vec = k*ones(numFrames*N, 1);
+        %nextVideo = [vec, modelAphidSeed(numFrames, init, N)];
+        nextVideo = [vec, modelAphidNoInteraction(numFrames, init, N)];
+        aphidData = [aphidData; nextVideo];
+        runDone = m
+    end
+    
+    %csvwrite('nonsenseData2.csv', aphidData)
+    %csvwrite('noInteractionData.csv', aphidData)
+    %csvwrite('fullInteractionData.csv', aphidData)
+    csvwrite(strcat('fullNoInteractionData', 'Exp', num2str(k), '.csv'), aphidData)
+    %csvwrite('nonsenseData3.csv', aphidData)
+    
+    stageDone = k
+    
 end
-
-%csvwrite('nonsenseData.csv', aphidData)
-%csvwrite('noInteractionData.csv', aphidData)
-%csvwrite('fullInteractionData.csv', aphidData)
-csvwrite('fullNoInteractionData.csv', aphidData)
