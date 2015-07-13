@@ -1,0 +1,41 @@
+maxFilt = 0.2;
+endTime = 10;
+
+for expnum = 1:9
+    
+    aphiddata = load(strcat('fullNoInteractionDataExp',num2str(expnum),'.csv'));
+    
+    for runnum = 1:endTime
+        disp(strcat('Making Crocker plots for exp: ', num2str(expnum), ' run: ', num2str(runnum)));
+        %indx = ( aphiddata(:,1) ==expnum);
+        %data = aphiddata(indx, [3 4 5 6 7 8]);
+        
+        %aphiddata = load('aphidsForCrocker.csv');
+        
+        %aphiddata = load('aphiddata.csv');
+        indx = (aphiddata(:,1) == runnum);
+        data = aphiddata(indx, [3 4 5]);
+        
+        %fname = strcat('h0Exp', num2str(expnum))
+        %fname = 'what';
+        make_crocker(data(:, [1 2 3]), 0, maxFilt, expnum, runnum);
+        
+        %fname = strcat('crocker_h1_exp_', num2str(expnum))
+        make_crocker(data(:, [1 2 3]), 1, maxFilt, expnum, runnum);
+        
+        %     unscaled_vel = [data(:, [1 2 3]), (data(:, 4) .* data(:, 5)), (data(:, 4) .* data(:, 6))];
+        %     fname = strcat('crocker_h0_raw_vel_', num2str(expnum));close
+        %     make_crocker(unscaled_vel, 0, fname, .3);
+        %
+        %     fname = strcat('crocker_h1_raw_vel_', num2str(expnum));
+        %     make_crocker(unscaled_vel, 1, fname, .3);
+        %
+        %     scaled_data = scale_velocities(data);
+        %     fname = strcat('crocker_h0_scaled_vel_', num2str(expnum));
+        %     make_crocker(scaled_data, 0, fname, 1.5);
+        %
+        %     fname = strcat('crocker_h1_scaled_vel_', num2str(expnum));
+        %     make_crocker(scaled_data, 1, fname, 1.5);
+    end
+    
+end
