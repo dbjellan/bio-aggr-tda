@@ -1,9 +1,8 @@
-function aphidData = modelAphid(T, init, N)
+function aphidData = modelAphidNoInteraction(T, init, N)
 %N is number of aphids desired, T is number of desired timesteps
 r = .2; %radius of experimental arena, in cm
 
 %bloody ridiculous constants needed for the model, all from pea aphid paper
-
 psmInfinite = 0.3552;
 pmsInfinite = 0.128;
 lInfinite = 0.0013; %in cm
@@ -11,12 +10,12 @@ lInfinite = 0.0013; %in cm
 num = 1000;
 xpoints = cauchyBins(num);
 
-
 %INITIALISE THE APHIDS
 %aphids by (1) angle, (2) length, (3) boolean indicated stopped (0) or moving
 %(1), (4) rectangular coordinates in form x + yi, (5) direction of motion
 %from the horizontal (sum of angles)
 aphids = zeros(N, 5);
+% aphidTracker = zeros(N, 5);
 
 %INIT: (1) aphid number, (2) xcoord, (3) ycoord, (4) xdir, (5) ydir, (6) moving
 
@@ -25,32 +24,33 @@ aphidNumbers = init(:, 1);
 aphids(:, 4) = init(:, 2) + init(:, 3)*1i;
 aphids(:, 3) = init(:, 6);
 
+
 for i = 1:N
     
-   %get the angles sorted out
-   x = init(i, 4);
-   y = init(i, 5);
-   angle = tan(y/x);
-   if x < 0
-       angle = angle + pi;
-   end 
-   aphids(i, 1) = angle;
-   aphids(i, 5) = angle;
-   
-   %and the length/vector
-   aphids(i, 2) = sqrt(init(i, 2)^2+init(i, 3)^2);
-   
+    %get the angles sorted out
+    x = init(i, 4);
+    y = init(i, 5);
+    angle = tan(y/x);
+    if x < 0
+        angle = angle + pi;
+    end
+    aphids(i, 1) = angle;
+    aphids(i, 5) = angle;
+    
+    %and the length/vector
+    aphids(i, 2) = sqrt(init(i, 2)^2+init(i, 3)^2);
+
 end
 
- %plotAphids(aphids(:, 4), r, 1); %PLOT LINE ONE
- 
- aphidData = zeros(N, 4); %filling in first frame into aphidData
- aphidData(:, 1) = aphidNumbers;
- aphidData(:, 2) = ones(N, 1); %because this is just for the first frame
- aphidData(:, 3) = real(aphids(:, 4));
- aphidData(:, 4) = imag(aphids(:, 4));
+% plotAphids(aphids(:, 4), r); %PLOT LINE ONE
 
- 
+aphidData = zeros(N, 4); %filling in first frame into aphidData
+aphidData(:, 1) = aphidNumbers;
+aphidData(:, 2) = ones(N, 1); %because this is just for the first frame
+aphidData(:, 3) = real(aphids(:, 4));
+aphidData(:, 4) = imag(aphids(:, 4));
+
+
 for t = 1:(T-1)
     newFrame = zeros(N, 4);
     newFrame(:, 1) = aphidNumbers; %count of all the different aphids
@@ -71,134 +71,46 @@ for t = 1:(T-1)
                 aphids(i, 3) = 0;
             end
         end
-        
-        
-        
+
         
         %if the aphid is going to move, determine angle and distance, update
         %coords
         if aphids(i,3) == 1
             length = lInfinite;
-            angle = wrappedCauchy(num, xpoints); 
+            angle = wrappedCauchy(num, xpoints);
             
-
+            
             aphids(i, 5) = aphids(i, 5) + angle;
             newX = real(aphids(i, 4)) + length*sin(aphids(i, 5));
             newY = imag(aphids(i, 4)) + length*cos(aphids(i, 5));
             
             %test if going outside circle, if so reflect
-            if sqrt(newX^2 + newY^2) > r
-                zi = aphids(i, 4);
-                zf = newX+ 1i * newY;
+            while sqrt(newX^2 + newY^2) > r
+                vect = rebound(aphids(i, :), newX, newY, r);
                 
-                sample = 1000; % Number of points for numerical computations
-                line = linspace(zf, zi, sample);
+                aphids(i, 3) = vect(3);
+                aphids(i, 4) = vect(4);
                 
-                theta = linspace(0,2*pi,sample);
-                circle = r*exp(1i*theta);
+                newX = vect(1);
+                newY = vect(2);
                 
-                circle = [real(circle);imag(circle)];
-                line = [real(line); imag(line)];
-                
-                pointIntersect = InterX(circle,line);
-                
-                if numel(pointIntersect) == 0
-                    zi
-                    zf
-                end
-                
-                tanAngle = 0;
-                %find tangent line by finding point where it hits x axis
-                %sides
-                if (testEquality(pointIntersect(2),0, 0.001))
-                    angle = atan((imag(zf) - imag(zi))/(real(zf)- real(zi)));
-                    angleSign = (real(zf)-real(zi))/abs(real(zf)-real(zi)); %zf-zi is intentional, not a typo
-                    if pointIntersect(1) < 0
-                        k = -1;
-                        c = 1;
-                    else
-                        k = 1;
-                        c = -1;
-                    end
-                    %top&bottom
-                elseif (testEquality(pointIntersect(1), 0, 0.001))
-                    if (real(zf)- real(zi) == 0)
-                        angle = pi/2; %because if it's going through the pole vertically, this is the ONLY angle you might want
-                    else
-                        angle = atan((imag(zf) - imag(zi))/(real(zf)- real(zi)));
-                    end
-                    
-                    angleSign = real(zi) - real(zf);
-                    if angleSign ~= 0
-                        angleSign = angleSign/abs(real(zi) - real(zf));
-                    end
-                    
-                    if angleSign > 0
-                        k = -1;
-                        c = 1;
-                    else
-                        k = 1;
-                        c = 1;
+                if newX - aphids(i, 3) ~= 0
+                    aphids(i, 5) = tan(abs(newY - aphids(i, 4))/abs(newX - aphids(i, 3)));
+                    if (aphids(i, 3) < 0)
+                        aphids(i, 5) = aphids(i, 5) + pi;
                     end
                 else
-                    c = pointIntersect(1)/abs(pointIntersect(1)); %+1 in QI, QIV; -1 in QII, QIII
-                    k = pointIntersect(1)*pointIntersect(2)/(abs(pointIntersect(1)*pointIntersect(2))); %+1 in QI, QIII; -1 in QII, QIV
-                    
-                    angle = atan(pointIntersect(2)/pointIntersect(1));
-                    if (c < 0) %because arctan doesn't work in qII & qIII
-                        angle = angle + pi;
-                    end
-                    h = r/cos(angle); %point of intersection of tan with x axis
-                    mTangent = pointIntersect(2)/(pointIntersect(1) - h);
-                    
-                    mVector = (pointIntersect(2) - imag(zi))/(pointIntersect(1) - real(zi));
-                    %find angle between vector and tangent line, for reflection
-                    angle = abs(atan((mTangent - mVector)/(1 + mVector * mTangent)));
-                    
-                    %mTangent;
-                    tanAngle = abs(atan(mTangent));
-                    
-                    %look at line perpendicular to tangent, see if the point the vector
-                    %starts at falls above or below; this determines the equation used to
-                    %find the angle of reflection
-                    yProjected = (1/mTangent)*(pointIntersect(1) - real(zi)) + pointIntersect(2);
-                    angleSign = (yProjected - imag(zi))/abs(yProjected - imag(zi));
-                    
+                    aphids(i, 5) = sign(aphids(i, 4)) * pi/2;
                 end
-                
-                if testEquality(angleSign, 0, 0.001)
-                    angleSign = 1;
-                end
-                
-                if(k * angleSign > 0)
-                    tanAngle = pi - tanAngle;
-                end
-                
-                toHorizontal = angleSign * tanAngle + c * angleSign * angle;
-                
-                %find length of reflected segment
-                %reflectLength = abs(zi-zf) - sqrt(real(zi)^2 + imag(zi)^2)
-                reflectLength = abs(zi-zf) - sqrt((pointIntersect(1)-real(zi))^2 + (pointIntersect(2)- imag(zi))^2);
-                
-                %location of endpoint is angle&reflectLength away from origin,
-                %transposed by the intersection point
-                finalLocation = reflectLength*cos(toHorizontal) + 1i * reflectLength*sin(toHorizontal);
-                finalLocation = finalLocation + pointIntersect(1) + 1i*pointIntersect(2);
-                
-                aphids(i, 4) = finalLocation;
-                aphids(i, 1) = acos(real(finalLocation)/sqrt(real(finalLocation)^2 + real(finalLocation)^2));
-                aphids(i, 5) = angle;
-            else
-                %plotAphids(aphids(:, 4), r);
-                aphids(i, 4) = newX + 1i * newY;
-                aphids(i, 1) = angle;
-                aphids(i, 2) = length;
             end
+            aphids(i, 4) = newX + 1i * newY;
+            aphids(i, 1) = angle;
+            
         end
     end
     
-    %plotAphids(aphids(:, 4), r, t+1); %PLOT LINE TWO
-    %pause(1);
+%     plotAphids(aphids(:, 4), r); %PLOT LINE TWO
+%     pause(1);
     
     newFrame(:, 3) = real(aphids(:, 4));
     newFrame(:, 4) = imag(aphids(:, 4));
@@ -207,7 +119,7 @@ for t = 1:(T-1)
 end
 end
 
-function plotAphids(coords, r, t)
+function plotAphids(coords, r)
 coordsX = real(coords);
 coordsY = imag(coords);
 
@@ -220,6 +132,58 @@ scatter(coordsX, coordsY, 'filled');
 axis([-r r -r r]);
 hold on; plot(circle,'b-'); hold off;
 end
+
+function vect = rebound(aphids, newX, newY, r)
+
+zi = aphids(4);
+zf = newX + 1i * newY;
+
+
+sample = 1000; % Number of points for numerical computations
+
+line = linspace(zf, zi, sample);
+theta = linspace(0,2*pi,sample);
+circle = r*exp(1i*theta);
+
+circle = [real(circle);imag(circle)];
+line = [real(line); imag(line)];
+
+pointIntersect = InterX(circle,line);
+
+if(numel(pointIntersect) == 0)  
+    if testEquality (sqrt(newX^2 + newY^2), r, 0.00001)
+        h2 = sqrt(newX^2 + newY^2) - 0.00002;
+        newX = h2 * cos(aphids(5));
+        newY = h2 * sin(aphids(5));
+    end 
+    vect = [newX, newY, 0, 0, zj];
+    return
+end
+
+d =  [real(zf)-real(zi), imag(zf)-imag(zi)];
+n = -pointIntersect/norm(pointIntersect);
+
+
+r = d-2*(d*n)*transpose(n);
+
+reflect_vect = r ./ norm(r);
+
+%find length of reflected segment
+%reflectLength = abs(zi-zf) - sqrt(real(zi)^2 + imag(zi)^2)
+%abs(zi-zf)
+reflectLength = abs(zi-zf) - sqrt((pointIntersect(1)-real(zi))^2 + (pointIntersect(2)- imag(zi))^2);
+%location of endpoint is angle&reflectLength away from origin,
+%transposed by the intersection point
+
+reflect_vect = reflectLength .* reflect_vect;
+finalLocation = reflect_vect(1) + 1i*reflect_vect(2) + pointIntersect(1) + 1i*pointIntersect(2);
+
+newX = real(finalLocation);
+newY = imag(finalLocation);
+
+vect = [newX, newY, pointIntersect(1), pointIntersect(2), zj];
+end
+
 
 
 % From Matlab file exchange
@@ -357,4 +321,3 @@ end
 xpoints(n) = (endpoints(n) + endpoints(n+1))/2;
 
 end
-
