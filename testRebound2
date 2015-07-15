@@ -46,47 +46,13 @@ pointIntersect = InterX(circle,line);
 hold on; plot(pointIntersect(1),pointIntersect(2),'ko'); hold off;
 
 
-dx = real(zf)-real(zi);
-dy = imag(zf)-imag(zf);
-x = pointIntersect(1);
-y = pointIntersect(2);
-
-if dx == 0
-    theta = pi/2;
-elseif dx < 0
-    theta = atan(dy/dx)+pi;
-else
-    theta = atan(dy/dx);
-end
-
-if theta < 0
-    theta = 2*pi+theta;
-end
-
-if x == 0
-    phi = pi/2;
-elseif x < 0
-    phi = atan(y/x)+pi;
-else
-    phi = atan(y/x);
-end
-
-if phi < 0
-    phi = 2*pi+phi
-end
-    
-incidence = abs(phi-theta);
-
-if abs(theta + 2*incidence - phi) < abs(theta - 2*incidence - phi)
-    toHorizontal = phi+incidence;
-else
-    toHorizontal = phi-incidence;
-end
+d =  [real(zf)-real(zi), imag(zf)-imag(zf)];
+n = -pointIntersect/norm(pointIntersect);
 
 
+r = d-2*(d*transpose(n))*n;
 
-
-
+reflect_vect = r/norm(r)
 
 %find length of reflected segment
 %reflectLength = abs(zi-zf) - sqrt(real(zi)^2 + imag(zi)^2)
@@ -95,10 +61,10 @@ reflectLength = -reflectLength;
 %location of endpoint is angle&reflectLength away from origin,
 %transposed by the intersection point
 
+reflect_vect = r/norm(r)*reflectLength;
+final = pointIntersect + reflect_vect;
+finalLocation = final(1) + 1i*final(1)
 
-finalLocation = reflectLength*cos(toHorizontal) + 1i * reflectLength*sin(toHorizontal);
-%finalLocation = reflectLength*sin(angle) + 1i * reflectLength*cos(angle)
-finalLocation = finalLocation + pointIntersect(1) + 1i*pointIntersect(2);
 
 lineTwo = linspace(finalLocation, pointIntersect(1) + 1i*pointIntersect(2), sample);
 hold on; plot(lineTwo,'r-'); plot(real(finalLocation),imag(finalLocation),'ko'); hold off;

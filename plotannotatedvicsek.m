@@ -12,8 +12,36 @@ function plotannotatedvicsek(solution, timestrapper, maxfilt, usedframes)
         if interval.getEnd() > interval.getStart()
             indx = str2num(generator.toString());
             particle = mod(indx, numparticles);
-            frame = idivide(int32(indx), numparticles);
-            particles_in_connected_component(particle, solution(:, [frame+1 frame+2 frame+3], maxfilt)
+            frame = sampletoframe(interval.getStart(), samples, frames);
+            endframe = sampletoframe(interval.getEnd(), samples, frames);
+            particles_in_connected_component(particle, solution(:, [frame+1 frame+2 frame+3]), maxfilt);
+            j = interval.getStart();
+            iend = interval.getEnd();
+            while j < iend,
+                next_complex = solution(:, [nframe+1 nframe+2 nframe+3]);
+                union_complex =  [solution(:, [frame+1 frame+2 frame+3]); next_complex];
+                particles = particles_in_connect_component(particle, union_complex, maxfilt);
+                components = cell(3);
+                for k = 1:size(particles, 1)
+                    particle = particles(k, :);
+                    if any(abs(particle-next_complex)<1e-10),
+                        already_included = 0;
+                        for l = 1:size(components, 3),
+                            if any(abs(particle-components(:, :, l)<1e-10)
+                                already_included = 1;
+                                break;
+                            end
+                        end
+                        if ~already_included
+                            components(:, :, l) = particles_in_connected_component(); %fix this
+                        end
+                    end
+                maxsize = -1;
+                maxindx = -1;
+                for k in 1:size(components, 3),
+                selected_component = components
+                j = j + 1;
+            end
         end
     end
     

@@ -1,4 +1,4 @@
-function make_vicsek_crocker(ourdata, dimension, fname, maxfilt)
+function crocker_dat = make_vicsek_crocker(ourdata, dimension, fname, maxfilt)
     load_javaplex;
     % set up dimensions of matrix for crocker plot
     filtrationgap = .05;
