@@ -17,8 +17,6 @@ lNaught = .0003; %in m
 lInfinite = .0013; %in m
 dl = 0.0074; %in m
 
-zj = 0;
-
 %INITIALISE THE APHIDS
 %aphids by (1) angle, (2) length, (3) boolean indicated stopped (0) or moving
 %(1), (4) rectangular coordinates in form x + yi, (5) direction of motion
@@ -48,7 +46,7 @@ for i = 1:N
    
 end
 
- %plotAphids(aphids(:, 4), r, 1); %PLOT LINE ONE
+ %plotAphids(aphids(:, 4), r); %PLOT LINE ONE
  
  aphidData = zeros(N, 4); %filling in first frame into aphidData
  aphidData(:, 1) = aphidNumbers;
@@ -94,15 +92,12 @@ for t = 1:(T-1)
         %coords
         if aphids(i,3) == 1
             length = lInfinite + (lNaught - lInfinite)*exp(-d/dl);
-            %rho = rhoInfinite + (rhoNaught - rhoInfinite)*exp(-d/drho);
             angle = wrappedCauchy(d);
             
-            %aphids(i, 5) = aphids(i, 5) + rho;
             aphids(i, 5) = aphids(i, 5) + angle;
             newX = real(aphids(i, 4)) + length*cos(aphids(i, 5));
             newY = imag(aphids(i, 4)) + length*sin(aphids(i, 5));
             
-            %test if going outside circle, if so reflect
             %test if going outside circle, if so reflect
             while sqrt(newX^2 + newY^2) > r
                 vect = rebound(aphids(i, :), newX, newY, r, zj);
@@ -125,7 +120,7 @@ for t = 1:(T-1)
         end
     end
     
-    %plotAphids(aphids(:, 4), r, t+1); %PLOT LINE TWO
+    %plotAphids(aphids(:, 4), r); %PLOT LINE TWO
     %pause(1);
     
     newFrame(:, 3) = real(aphids(:, 4));
@@ -135,7 +130,7 @@ for t = 1:(T-1)
 end
 end
 
-function plotAphids(coords, r, t)
+function plotAphids(coords, r)
 coordsX = real(coords);
 coordsY = imag(coords);
 
@@ -144,12 +139,11 @@ circle = r*exp(1i*theta);
 
 %plots current frame
 scatter(coordsX, coordsY, 'filled');
-title(strcat('Aphids ', t));
 axis([-r r -r r]);
 hold on; plot(circle,'b-'); hold off;
 end
 
-function vect = rebound(aphids, newX, newY, r, zj)
+function vect = rebound(aphids, newX, newY, r)
 
 zi = aphids(4);
 zf = newX + 1i * newY;
@@ -169,8 +163,8 @@ pointIntersect = InterX(circle,line);
 if(numel(pointIntersect) == 0)    
     if testEquality (sqrt(newX^2 + newY^2), r, 0.00001)
         h2 = sqrt(newX^2 + newY^2) - 0.00002;
-        newX = h2 * cos(aphids(i, 5));
-        newY = h2 * sin(aphids(i, 5));
+        newX = h2 * cos(aphids(5));
+        newY = h2 * sin(aphids(5));
     end 
     vect = [newX, newY, 0, 0, zj];
     return
