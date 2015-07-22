@@ -24,6 +24,7 @@ function plotannotatedvicsek(solution, timestrapper, maxfilt, usedframes)
                 components = cell(3);
                 for k = 1:size(particles, 1)
                     particle = particles(k, :);
+                    
                     if any(abs(particle-next_complex)<1e-10),
                         already_included = 0;
                         for l = 1:size(components, 3),
@@ -39,7 +40,7 @@ function plotannotatedvicsek(solution, timestrapper, maxfilt, usedframes)
                 maxsize = -1;
                 maxindx = -1;
                 for k in 1:size(components, 3),
-                selected_component = components
+                    selected_component = components; 
                 j = j + 1;
             end
         end
@@ -56,6 +57,7 @@ function plotannotatedvicsek(solution, timestrapper, maxfilt, usedframes)
         hold off;
         title(strcat('Frame: ', sprintf('%d', num2str(curstep/3))));
         axis([0 2*pi 0 2*pi]);
+        
 
         % increment frame and pause
         curstep = curstep + 3;
