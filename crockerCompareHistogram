@@ -1,0 +1,50 @@
+dimension = 1;
+
+% expModel = [];
+% expNon = [];
+
+for m = 1:9
+    
+    expModel = [];
+    expNon = [];
+    
+    data1 = load(strcat('ModelAndExperimental100', 'h', num2str(dimension), 'exp', num2str(m), 'differences', '.csv'));
+    data2 = load(strcat('ExperimentalAndNon100', 'h', num2str(dimension), 'exp', num2str(m), 'differences', '.csv'));
+    
+    expModel = [expModel, data1(:)];
+    expNon = [expNon, data2(:)];
+    
+    %     values = diffMatrix12./(sizeSamp(1) * sizeSamp(2));
+    %     csvwrite(strcat('ModelAndExperimental', 'h', num2str(dimension), 'exp', num2str(m), 'differences', '.csv'), values)
+    %
+    %     values = diffMatrix13./(sizeSamp(1) * sizeSamp(2));
+    %     csvwrite(strcat('ExperimentalAndNon', 'h', num2str(dimension), 'exp', num2str(m), 'differences', '.csv'), values)
+    %
+    %     values = diffMatrix23./(sizeSamp(1) * sizeSamp(2));
+    %     csvwrite(strcat('ModelAndNon', 'h', num2str(dimension), 'exp', num2str(m), 'differences', '.csv'), values)
+    
+    
+    han = figure;
+    % expModel = expModel.*1000;
+    % expModel = floor(expModel);
+    % expModel
+
+    hist([expModel(:), expNon(:)]);
+        axis([0, .5, 0, 50]);
+    % hold on
+    % hist(expNon(:));
+    
+    saveas(han, strcat('compare100ExpModAndExpNonHistExp', num2str(m), '.png'));
+    
+end
+
+% 
+% 
+% han = figure;
+% % expModel = expModel.*1000;
+% % expModel = floor(expModel);
+% % expModel
+% hist([expModel(:), expNon(:)]);
+% % hold on
+% % hist(expNon(:));
+

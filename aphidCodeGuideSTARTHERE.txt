@@ -1,0 +1,33 @@
+M's helpful aphid code guide
+
+The aphid headings for the original data are 
+"video","trajectory","frame","x.pos","y.pos","speed","x.dir","y.dir","moving","transition.class","dist.nearest.neighbor","dist.nearest.moving","dist.nearest.stationary"
+
+
+Comparing CROCKER workflow:
+Start by generating simulation data from the interactive model and the control model. (Presumably you already have the experimental data.) To do so, run the file
+generateAphidsFromSeed.m. This’ll call either modelAphidSeed or modelAphidNoInteraction, whichever isn’t commented out. As you might expect, the first uses the interactive model and the latter the control model. Outer for loop (index k) goes through whatever experiments you want, usually gonna be 1-9. Inner for loop (index m) runs through all the runs you wanna do. Check to make sure that both of these have the correct ranges and that you are WRITING TO THE CORRECT FILE NAME. Do NOT write to fullModelData when you mean to write to fullNoInteractionData.
+OTHER THING TO REMEMBER: if you're calling this for the purposes of generating data and don't want pictures, then be sure to comment out the plot and pause lines in modelAphid! (there are two plot commands, one in the loop and one above.)
+
+This is the long part. Probably you’ll want to distribute to different machines, at least have one run the non-model and one run the model. Model takes longer, so put it on the faster machine if there’s a difference.
+
+Then, you should have all the data you want. It’s time to generate the CROCKER plots.
+Use make_crocker_plots_compare.m which calls make_crocker_compare.m. This time you need to change things in BOTH FILES, so take care. endTime should be set to the total number of runs you want to go up to. If you’re only concerned with the first 50, set it to 50. If you wanna go from 50-100, set it to 100. Then make sure expnum is going on the range you want. NOTE: if you’re doing something like 100 plots for each video (why would you want to do a thing like that?) then you’re probably going to run out of memory. You’ll probably have to go one exp at a time. Or take your chances. It saves after each plot, so you don’t lose anything if it crashes in the middle, you can just pick up from there. 
+SO: set endTime, make sure expnum and runnum are indexing over what you want ‘em to be, MAKE SURE YOU ARE LOADING THE CORRECT DATA. merlin. Then, you’re in the clear on this file, move over to make_crocker_compare.m. There, you might wanna comment out load_javaplex if you’ve already loaded it, it’ll save you some time. THEN the only thing you have to worry about is saving to the correct file name. 
+Be sure to run for both H0 and H1! (just change dimension = 0 to dimension = 1 or vice versa and run again)
+
+By the way, this stage is considerably faster than generating the data.
+
+Next you have your CROCKER plots, and you’re ready to compare them!
+WHEN COMPARING CROCKERS: For merlin’s sake, don’t use compareDifferentCrockers.m, it’s inefficient and the whole 3D matrix thing was a failure. Instead, use compare100crocker.m, which is much much faster. It doesn’t compare the  model and non-model to each other but. Trust me. You don’t need that, and it’s not worth the extra time. Change N to your number of runs, make sure m is indexing over the videos you want, make sure you’re loading and writing to the correct data, and writing to the correct files, and that’s it! Since you’re just comparing all of the CROCKER plots to the experimental data for that one video, your matrices in the resulting files should be 1xN.
+compareCrocker.m was the file to compare CROCKER plots to others from the same model. This is a really nice thing to have, but - I don’t think it’s totally necessary with the histograms, and I’m not thinking of a way to retool the code so it’s efficient enough to actually run.
+Do this for both H0 and H1 too!
+
+From there, you’re ready to run meanOfCrocker.m, which’ll give you all the nitty-gritty numeric details - just load the right files, write to the right files. For each comparison (experimental and model, for example), it saves a matrix with the mean of the differences for each video, and it outputs the means of those. RECALL that since you’re not generating the modelAndNon data (since it takes too long and isn’t that relevant) that those lines’ll just stay commented. Don’t worry about them. Same with the self-comparisons.
+
+Lastly, generate the histograms. crockerCompareHistogram.m, not difficult. make sure you do it for both H0 and H1, make sure that you’re grabbing the right files and saving to the right files.
+
+Other things you might want to do:
+
+plotAphidTracks.m does exactly what it says on the tin. (That is, it plots out the tracks aphids leave as they move. Great visualisation tool.) REMEMBER TO UNCOMMENT LOAD JAVAPLEX AND YOUR DATASET FOR THE FIRST RUN. Comment load_javaplex after that, and if you’re using same dataset you can comment that too once it’s in memory, if it’s huge you don’t want to load it every time. So uncomment/type in the dataset you wanna pull from (it should be actual aphid position data) set the experiment number (aka video number, for the extended simulations this is usually run number and not exp number at all. (that is, it should go up to 100 for the 100 run simulations)) Also set the frame you want to start from - remember you have to start from frame 2 if you’re using the actual experimental data, because those don’t have a first frame. Check your axes are the right dimensions (or wing it, that’s fine too -) and you’re good to go.
+If it’s not working, your expnum is probably set to an experiment that doesn’t turn up in the data you selected. Look at your data to be sure. Or, it’s possible your axes are wrong for the size of the data. Almost all of the stuff I generated or have been playing with is 20cm, so you want the axis([-.3 .3 -.3 .3]); but some might need the bigger axes or it may be auto-configured to something zoomed on a smaller region.

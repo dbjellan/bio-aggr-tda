@@ -1,9 +1,33 @@
+%
+% plotAphidTracks.m does exactly what it says on the tin. REMEMBER TO UNCOMMENT LOAD JAVAPLEX AND YOUR DATASET FOR THE FIRST RUN.
+% Comment load_javaplex after that, and if you’re using same dataset you can comment that too once it’s in memory,
+% if it’s huge you don’t want to load it every time. So uncomment/type in the dataset you wanna pull from
+% (it should be actual aphid position data) set the experiment number (aka video number, for the extended
+% simulations this is usually run number and not exp number at all. (that is, it should go up to 100 for the
+% 100 run simulations)) Also set the frame you want to start from - remember you have to start from frame 2 if
+% you’re using the actual experimental data, because those don’t have a first frame. Check your axes are the
+% right dimensions (or wing it, that’s fine too -) and you’re good to go.
+%
+% If it’s not working, your expnum is probably set to an experiment that doesn’t turn up in the data you selected.
+% Look at your data to be sure. Or, it’s possible your axes are wrong for the size of the data. Almost all of the stuff
+% I generated or have been playing with is 20cm, so you want the axis([-.3 .3 -.3 .3]); but some might need the bigger
+% axes or it may be auto-configured to something zoomed on a smaller region.
+% %
+
+
 %uncomment load javaplex and data for first run, then recomment to shorten runtime
 %load_javaplex;
+
 %aphiddata = load('aphiddata.csv');
-expnum = 3;
-framenum = 12; %starting frame, goes out 5 frames from here
-numOfFrames = 450;
+%aphiddata = load('aphiddata.csv');
+%aphiddata = load('fullModelDataExp4.csv');
+aphiddata = load('fullNoInteractionDataExp4.csv');
+%aphiddata = load('noInteractionData.csv');
+%aphiddata = load('fullNoInteractionDataRun.csv');
+
+expnum = 9;
+framenum = 2; %starting frame, goes out numOfFrames frames from here
+numOfFrames = 200;
 stepsize = 0.001;
 epsilon = stepsize;
 maximum = 0.05;
@@ -42,7 +66,15 @@ firstOccurenceEachAphid = firstOccurenceEachAphid(any(firstOccurenceEachAphid,2)
 % plots current frame
 figure
 scatter(firstOccurenceEachAphid(:, 2), firstOccurenceEachAphid(:, 3), 'filled'); %TODO: this will not account for points that show up in later frames but not in this one!
+
 axis([-.3 .3 -.3 .3]);
+%axis([-.1 .1 -.15 .05]);
+%axis([-20 20 -20 20]);
+%axis([-200 200 -200 200]);
+theta = linspace(0,2*pi,1000);
+circle = .2*exp(1i*theta);
+
+hold on; plot(circle,'b-'); hold off;
 
 % and add text labels
 for j = 1:numel(firstOccurenceEachAphid(:, 1))

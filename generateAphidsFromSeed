@@ -1,3 +1,12 @@
+% This’ll call either modelAphidSeed or modelAphidNoInteraction, whichever 
+% isn’t commented out. As you might expect, the first uses the interactive 
+% model and the latter the control model. Outer for loop (index k) goes 
+% through whatever experiments you want, usually gonna be 1-9. Inner for 
+% loop (index m) runs through all the runs you wanna do. Check to make sure 
+% that both of these have the correct ranges and that you are WRITING TO THE 
+% CORRECT FILE NAME. Do NOT write to fullModelData when you mean to write to 
+% fullNoInteractionData.
+
 %REMEMBER: if you're calling this for the purposes of generating data and
 %don't want pictures, then be sure to comment out the plot and pause lines
 %in modelAphid! (there are two plot commands, one in the loop and one above.)
@@ -13,27 +22,29 @@
 
 frames = [4605; 5647; 5651; 5409; 5409; 5221; 5332; 5418; 5883];
 
-aphidData = [];
 firstFrames = load('firstFrames.csv');
 
 for k = 1:9 %there are only nine experiments. there have only ever been nine experiments. 'there are seven experiments,' they tell you. why do you have so much data?
-    for m = 1:10 
+    aphidData = [];
+    
+    for m = 1:100
         numFrames = frames(k);
         indx = (firstFrames(:,1) == k);
         init = firstFrames(indx, [2, 4, 5, 6, 7, 8]); %aphid number, xcoord, ycoord, xdir, ydir, moving
         dim = size(init);
         N = dim(1);
-        vec = k*ones(numFrames*N, 1);
+        vec = m*ones(numFrames*N, 1);
         %nextVideo = [vec, modelAphidSeed(numFrames, init, N)];
         nextVideo = [vec, modelAphidNoInteraction(numFrames, init, N)];
         aphidData = [aphidData; nextVideo];
         runDone = m
     end
-    
+        
     %csvwrite('nonsenseData2.csv', aphidData)
-    %csvwrite('noInteractionData.csv', aphidData)
-    %csvwrite('fullInteractionData.csv', aphidData)
-    csvwrite(strcat('fullNoInteractionData', 'Exp', num2str(k), '.csv'), aphidData)
+    %csvwrite('full100noInteractionData.csv', aphidData)
+    csvwrite(strcat('full100noInteractionData', 'Exp', num2str(k), '.csv'), aphidData)
+    %csvwrite('full100InteractionData.csv', aphidData)
+    %csvwrite(strcat('fullModelData', 'Exp', num2str(k), '.csv'), aphidData)
     %csvwrite('nonsenseData3.csv', aphidData)
     
     stageDone = k
