@@ -1,6 +1,6 @@
 function vicsekmovie(solution, fname)
     curstep = 1;
-    endstep = size(solution, 2)/2;
+    endstep = 3000;
     dl = .08;
     vwriter = VideoWriter(fname, 'MPEG-4');
     open(vwriter);

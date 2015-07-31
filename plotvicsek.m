@@ -1,8 +1,5 @@
-function plotvicsek(solution)
-    curstep = 1;
-    endstep = size(solution, 2);
+function plotvicsek(solution, curstep)
     dl = .08;
-    while 1,
         % plots current frame
         %scatter(solution(:, curstep), solution(:, curstep+1), 'filled');
         scatter(solution(:, curstep), solution(:, curstep+1));
