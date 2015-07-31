@@ -55,13 +55,7 @@ function make_crocker_compare(ourdata, dimension, maxfilt, expnum, runnum)
     colorbar;
     %hgexport(han, fname);
     %hgsave(fname);
-    saveas(han, strcat('noInteraction', 'h', num2str(dimension), 'exp', num2str(expnum), 'run', num2str(runnum)), 'png');
+    saveas(han, strcat('noInteraction100', 'h', num2str(dimension), 'exp', num2str(expnum), 'run', num2str(runnum)), 'png');
   
-    csvwrite(strcat('noInteraction', 'h', num2str(dimension), 'exp', num2str(expnum), 'run', num2str(runnum), '.csv'), crocker_dat)
-end
-
-% converts sample number to frame number. Minimum frame is 2 since that is
-% the first collected frame in our dataset
-function r = sampletoframe(sample, numsamples, numframes)
-    r = max(1, floor(sample * numframes / numsamples));
+    csvwrite(strcat('noInteraction100', 'h', num2str(dimension), 'exp', num2str(expnum), 'run', num2str(runnum), '.csv'), crocker_dat)
 end
