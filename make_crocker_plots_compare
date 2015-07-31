@@ -1,13 +1,32 @@
+% Use make_crocker_plots_compare.m which calls make_crocker_compare.m. This 
+% time you need to change things in BOTH FILES, so take care. endTime should 
+% be set to the total number of runs you want to go up to. If you’re only 
+% concerned with the first 50, set it to 50. If you wanna go from 50-100, set 
+% it to 100. Then make sure expnum is going on the range you want. NOTE: if 
+% you’re doing something like 100 plots for each video (why would you want 
+% to do a thing like that?) then you’re probably going to run out of memory. 
+% You’ll probably have to go one exp at a time. Or take your chances. It 
+% saves after each plot, so you don’t lose anything if it crashes in the 
+% middle, you can just pick up from there. 
+% SO: set endTime, make sure expnum and runnum are indexing over what you 
+% want ‘em to be, MAKE SURE YOU ARE LOADING THE CORRECT DATA. merlin. Then, 
+% you’re in the clear on this file, move over to make_crocker_compare.m. 
+% There, you might wanna comment out load_javaplex if you’ve already loaded 
+% it, it’ll save you some time. THEN the only thing you have to worry about 
+% is saving to the correct file name. 
+
 maxFilt = 0.2;
-endTime = 10;
+endTime = 100;
 
 for expnum = 1:9
     
-    aphiddata = load(strcat('fullNoInteractionDataExp',num2str(expnum),'.csv'));
+    aphiddata = load(strcat('full100noInteractionDataExp',num2str(expnum),'.csv'));
+    %n = 1:874950;
+    %aphiddata = aphiddata(n,:);
     
     for runnum = 1:endTime
         disp(strcat('Making Crocker plots for exp: ', num2str(expnum), ' run: ', num2str(runnum)));
-        %indx = ( aphiddata(:,1) ==expnum);
+        %indx = ( aphiddata(:,1) == expnum);
         %data = aphiddata(indx, [3 4 5 6 7 8]);
         
         %aphiddata = load('aphidsForCrocker.csv');
@@ -18,10 +37,10 @@ for expnum = 1:9
         
         %fname = strcat('h0Exp', num2str(expnum))
         %fname = 'what';
-        make_crocker(data(:, [1 2 3]), 0, maxFilt, expnum, runnum);
+        make_crocker_compare(data(:, [1 2 3]), 0, maxFilt, expnum, runnum);
         
         %fname = strcat('crocker_h1_exp_', num2str(expnum))
-        make_crocker(data(:, [1 2 3]), 1, maxFilt, expnum, runnum);
+        make_crocker_compare(data(:, [1 2 3]), 1, maxFilt, expnum, runnum);
         
         %     unscaled_vel = [data(:, [1 2 3]), (data(:, 4) .* data(:, 5)), (data(:, 4) .* data(:, 6))];
         %     fname = strcat('crocker_h0_raw_vel_', num2str(expnum));close
